@@ -5,4 +5,5 @@ http://gosper.org/Minskys/
 circleFactor and rotation typically a positive integer
 
 x -= -rotation * (circleFactor * y + x - rotation * x) / resolution;
+
 y += -rotation * (circleFactor * x - y + rotation * y) / resolution;
