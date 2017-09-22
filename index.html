@@ -1,0 +1,128 @@
+<html>
+
+<head>
+  <title>Canvas Futsing</title>
+</head>
+
+<body>
+  <label>Delta:</label>
+  <input type="range" value="4" id="delta" onchange="changeSymbol(event.target.value)" />
+  <br/>
+  <label>Epsilon:</label>
+  <input type="range" value="4" id="epsilon" onchange="changeSymbol(null,event.target.value)" />
+  <br />
+  <label>X0:</label>
+  <input type="range" value="500" id="X0" min="100" max="500" onchange="changeInitPt(event.target.value)" />
+  <br/>
+  <label>Y0:</label>
+  <input type="range" value="500" id="Y0" min="100" max="500" onchange="changeInitPt(null,event.target.value)" />
+  <br/>
+  <label>Floor: </label>
+  <input type="checkbox" checked id="floor" onclick="toggleFloor(event.target.checked)" />
+  <br />
+  <button onclick="clearCanvas()">Clear</button>
+  <br />
+  <canvas id="cvs" width="1000" height="1000"></canvas>
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+  changeSymbol(
+    document.querySelector("#delta").value,
+    document.querySelector("#epsilon").value
+  );
+  // changeInitPt(
+  //   document.querySelector("#X0").value,
+  //   document.querySelector("#Y0").value
+  // );
+});
+
+function changeSymbol(deltaChange, epsilonChange) {
+  console.log("delta, epsilon: ", deltaChange, epsilonChange);
+  if (deltaChange) delta = Math.pow(10, -(deltaChange / 10));
+  if (epsilonChange) epsilon = Math.pow(10, -(epsilonChange / 10));
+}
+
+function changeInitPt(X0New, Y0New) {
+  x = X0New;
+  y = Y0New;
+}
+
+var c = document.querySelector("#cvs");
+var ctx = c.getContext("2d");
+var floorEnabled = true;
+
+function toggleFloor(enabled) {
+  floorEnabled = enabled;
+}
+
+function clearCanvas() {
+  console.log("Cleared canvas.");
+  c.width += 0;
+  imgData = new ImageData(c.width, c.height);
+}
+
+function setPixel(imgData, x, y, rgbaArray) {
+  for (var i = 0; i < 4; i++) {
+    imgData.data[y * 4 * imgData.width + x * 4 + i] = rgbaArray[i];
+  }
+}
+var imgData = ctx.getImageData(0, 0, c.width, c.height);
+var maxSin = 0;
+// for (var y = 0; y < imgData.height; y++) {
+//   for (var x = 0; x < imgData.width; x++) {
+//     maxSin = Math.max(Math.floor(Math.abs(Math.sin(y) * 255)), maxSin);
+//     setPixel(imgData, x, y, [Math.abs(Math.sin(y) * 255), 0, 0, 255]);
+//   }
+// }
+var x = 500,
+  y = 500;
+var stepNum = 0;
+
+var delta = Math.pow(10, -3);
+var epsilon = Math.pow(10, -3);
+
+function drawPixel() {
+  var pairs = [];
+  for (var i = 0; i < 5000; i++) {
+    var oldX = x;
+
+    const superStep = stepNum + i;
+    // if (Math.abs(x + y) > 1000) {
+    const circleFactor = Math.pow(2, 6);
+    const resolution = 1.202;
+    const rotation = 1;
+    // x -= -rotation * (circleFactor * y + x - rotation * x) / resolution;
+    // y += -rotation * (circleFactor * x - y + rotation * y) / resolution;
+    if (floorEnabled) {
+      x -= Math.floor(y * delta);
+      y += Math.floor(x * epsilon);
+    } else {
+      x -= y * delta;
+      y += x * epsilon;
+    }
+
+    // } else {
+    //   x += 1 * (32 * y + x) / Math.pow(2, 16);
+    //   y -= 1 * (32 * x - y) / Math.pow(2, 16);
+    // }
+
+    setPixel(
+      imgData,
+      Math.abs(((x / 10) | 0) - 250),
+      Math.abs(((y / 10) | 0) - 250),
+      // Math.abs((((x + Math.cos(stepNum) * 500) / 10) | 0) - 250),
+      // Math.abs((((y + Math.sin(stepNum) * 500) / 10) | 0) - 250),
+      [stepNum % 255, 255 - stepNum % 255, 0, 255]
+    );
+    // if (Math.random() < 0.0001) console.log(pairs);
+  }
+  if (stepNum % 5000) ctx.putImageData(imgData, 0, 0);
+  stepNum++;
+}
+
+setInterval(drawPixel, 10);
+// setInterval();
+console.log(imgData.data);
+</script>
+</body>
+
+</html>
